@@ -19,3 +19,4 @@
 - [ ] automerge store vs app specific logic (see store.js - add vs clearClompleted)
 - [ ] when making multiple changes is there a way to include them as a single atomic change?
 - [ ] automerge doc chagnes currently change the entire store - I think svelte would prefer if we only updated the changed items for efficiency/not-re-rendering every component
+- [ ] need a shared worker for the app? (how pvh originally did it to only have 1 writer)
