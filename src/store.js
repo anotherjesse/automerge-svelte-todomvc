@@ -3,7 +3,6 @@ import * as Automerge from 'automerge-wasm-pack'
 import { writable } from 'svelte/store';
 
 
-const ROOT = '_root'
 
 // as a first pass the automerge document is not exposed to consumer of the store
 // rather, whenever the automerge document is updated, we then update the store
@@ -13,27 +12,53 @@ const ROOT = '_root'
 export const createAutomergeStore = () => {
     const { subscribe, set, update } = writable([]);
 
-    let doc = Automerge.create()
-
-    const reset = () => {
-        doc.set_object(ROOT, 'items', [])
-    }
+    const doc = Automerge.create()
+    const ROOT = '_root'
+    doc.set_object(ROOT, 'items', [])
+    const itemsRef = doc.value(ROOT, 'items')[1]
 
     const add = (item) => {
-        let itemsRef = doc.value(ROOT, 'items')[1]
         doc.push_object(itemsRef, item)
         updateStore();
     }
 
     const remove = (index) => {
-        let itemsRef = doc.value(ROOT, 'items')[1]
         doc.del(itemsRef, index)
         updateStore()
     }
 
+    const updateItemField = (index, key, value) => {
+        let theItem = doc.value(itemsRef, index)[1]
+        doc.set(theItem, key, value)
+        updateStore()
+    }
+
+    // FIXME(ja): some of these things are not like the others.
+    // calls like "add" and "remove" are pretty generic - and could be in an
+    // automerge store, whereas clearCompleted is app specific - and be at a higher
+    // level that wraps or uses the automerge store.
+    const clearCompleted = () => {
+        let changed = false;
+
+        for (let i = doc.length(itemsRef) - 1; i >= 0; i--) {
+            const theItemRef = doc.value(itemsRef, i)[1]
+            const completed = doc.value(theItemRef, 'completed')[1]
+            if (completed) {
+                doc.del(itemsRef, i)
+                changed = true;
+            }
+        }
+
+        if (changed) {
+            updateStore();
+        }
+    }
+
+
+    // this actually updates the value of the store for svelte consumers
+    // it should be called after any updates of automerge document
     const updateStore = () => {
         let items = [];
-        let itemsRef = doc.value(ROOT, 'items')[1]
         for (let i = 0; i < doc.length(itemsRef); i++) {
             let theItemRef = doc.value(itemsRef, i)[1]
             let obj = {}
@@ -46,14 +71,22 @@ export const createAutomergeStore = () => {
         set(items)
     }
 
+    const toggleAll = () => {
+        for (let i = doc.length(itemsRef) - 1; i >= 0; i--) {
+            const theItemRef = doc.value(itemsRef, i)[1]
+            const completed = doc.value(theItemRef, 'completed')[1]
+            doc.set(theItemRef, 'completed', !completed)
+        }
 
-    reset(); // initialize
-
+        updateStore();
+    }
     return {
         subscribe,
         add,
-        reset,
-        remove
+        remove,
+        updateItemField,
+        clearCompleted,
+        toggleAll
     };
 }
 

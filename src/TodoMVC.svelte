@@ -22,18 +22,6 @@
   window.addEventListener('hashchange', updateView)
   updateView()
 
-  function clearCompleted() {
-    items = items.filter((item) => !item.completed)
-  }
-
-  function toggleAll(event) {
-    items = items.map((item) => ({
-      id: item.id,
-      description: item.description,
-      completed: event.target.checked,
-    }))
-  }
-
   function createNew(event) {
     if (event.which === ENTER_KEY) {
       store.add({
@@ -50,12 +38,12 @@
     else if (event.which === ESCAPE_KEY) editing = null
   }
 
-  function submit(event) {
-    let itemsRef = doc.value(ROOT, 'items')[1]
-    let theItem = doc.value(itemsRef, editing)[1]
-    doc.set(theItem, 'description', event.target.value)
-    doc = doc
-    editing = null
+  function updateDescription(event) {
+    // only updateDescription if editing is still set
+    if (editing) {
+      store.updateItemField(editing, 'description', event.target.value)
+      editing = null
+    }
   }
 
   function uuid() {
@@ -109,7 +97,7 @@
       id="toggle-all"
       class="toggle-all"
       type="checkbox"
-      on:change={toggleAll}
+      on:change={store.toggleAll}
       checked={numCompleted === items.length}
     />
     <label for="toggle-all">Mark all as complete</label>
@@ -125,7 +113,9 @@
             <input
               class="toggle"
               type="checkbox"
-              bind:checked={item.completed}
+              checked={item.completed}
+              on:change={(event) =>
+                store.updateItemField(index, 'completed', event.target.checked)}
             />
             <label on:dblclick={() => (editing = index)}
               >{item.description}</label
@@ -139,7 +129,7 @@
               id="edit"
               class="edit"
               on:keydown={handleEdit}
-              on:blur={submit}
+              on:blur={updateDescription}
               autofocus
             />
           {/if}
@@ -172,7 +162,7 @@
       </ul>
 
       {#if numCompleted}
-        <button class="clear-completed" on:click={clearCompleted}>
+        <button class="clear-completed" on:click={store.clearCompleted}>
           Clear completed
         </button>
       {/if}
