@@ -11,6 +11,8 @@
 - [ ] can automerge wasm be in the store?
 - [ ] re-add filesystem stuff to automerge store
 - [ ] the new/open/save popup nightmare
+- [ ] switch back to typescript: store.js -> store.ts
+- [ ] re-create project to have a modern svelte/rollup/... setup
 
 ## TODO Better!
 - [ ] should index be used for updates to items - it seems brittle?
