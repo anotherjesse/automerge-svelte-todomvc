@@ -40,7 +40,7 @@
 
   function updateDescription(event) {
     // only updateDescription if editing is still set
-    if (editing) {
+    if (editing != null) {
       store.updateItemField(editing, 'description', event.target.value)
       editing = null
     }
