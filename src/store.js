@@ -2,8 +2,6 @@ import * as IDB from 'idb-keyval'
 import * as Automerge from 'automerge-wasm-pack'
 import { writable } from 'svelte/store';
 
-
-
 // as a first pass the automerge document is not exposed to consumer of the store
 // rather, whenever the automerge document is updated, we then update the store
 // manually....

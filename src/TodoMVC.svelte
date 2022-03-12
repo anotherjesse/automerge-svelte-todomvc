@@ -6,7 +6,7 @@
   let fileHandle
 
   const store = createAutomergeStore()
-
+  console.log('ok')
   let currentFilter = 'all'
   let editing = null
 
