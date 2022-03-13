@@ -8,12 +8,14 @@ import { writable } from 'svelte/store';
 // manually....
 // FIXME(ja): it should probably not work that way ?
 
-interface StoreItem {
+
+
+type StoreItem = {
     [key: string]: string | number | boolean
-}
+} // FIXME(ja): this is the automerge store type, not our app's store type!
 
 export const createAutomergeStore = () => {
-    const { subscribe, set, update } = writable([]);
+    const { subscribe, set, update } = writable([] as Array<StoreItem>);
 
     let doc: Automerge.Automerge = null;
     let itemsRef: string = null;
@@ -89,7 +91,7 @@ export const createAutomergeStore = () => {
 
         for (let i = doc.length(itemsRef) - 1; i >= 0; i--) {
             const theItemRef: string = <string>doc.value(itemsRef, i)[1]
-            const completed = <boolean>doc.value(theItemRef, 'completed')[1]
+            const completed: boolean = <boolean>doc.value(theItemRef, 'completed')[1]
             doc.set(theItemRef, 'completed', !completed)
         }
 
@@ -99,7 +101,7 @@ export const createAutomergeStore = () => {
     // this actually updates the value of the store for svelte consumers
     // it should be called after any updates of automerge document
     const updateStore = () => {
-        let items = [];
+        let items: Array<StoreItem> = [];
         for (let i = 0; i < doc.length(itemsRef); i++) {
             let theItemRef: string = <string>doc.value(itemsRef, i)[1]
             let obj = {}
