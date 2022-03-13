@@ -8,7 +8,7 @@
 
 - [x] move automerge to a store
 - [x] fix complete/description/delete
-- [ ] can automerge wasm init when needed (in the store?)
+- [?] can automerge wasm init when needed (in the store?)
 - [ ] re-add filesystem stuff to automerge store
 - [ ] the new/open/save popup nightmare
 - [x] switch back to typescript: store.js -> store.ts

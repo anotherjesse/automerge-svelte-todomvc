@@ -1,5 +1,6 @@
 import * as IDB from 'idb-keyval'
 import * as Automerge from 'automerge-wasm-pack'
+import init from "automerge-wasm-pack"
 import { writable } from 'svelte/store';
 
 // as a first pass the automerge document is not exposed to consumer of the store
@@ -7,25 +8,50 @@ import { writable } from 'svelte/store';
 // manually....
 // FIXME(ja): it should probably not work that way ?
 
+interface StoreItem {
+    [key: string]: string | number | boolean
+}
+
 export const createAutomergeStore = () => {
     const { subscribe, set, update } = writable([]);
 
-    const doc = Automerge.create()
-    const ROOT = '_root'
-    doc.set_object(ROOT, 'items', [])
-    const itemsRef: string = <string>doc.value(ROOT, 'items')[1]
+    let doc: Automerge.Automerge = null;
+    let itemsRef: string = null;
+    const ROOT = '_root';
 
-    const add = (item) => {
+    // FIXME(ja): issues with this approach:
+    // - each automerge store (might) have its own automerge wasm instance?
+    // - is there a way for this to become async? / expose better UX flow when automerge 
+    // - doesn't initialize (instead of throwing when trying to mutate)
+
+    init("/index_bg.wasm").then(() => {
+        doc = Automerge.create()
+        doc.set_object(ROOT, 'items', [])
+        itemsRef = <string>doc.value(ROOT, 'items')[1];
+    });
+
+    const add = (item: StoreItem) => {
+        if (doc === null) {
+            throw Error('automerge store not initialized')
+        }
         doc.push_object(itemsRef, item)
         updateStore();
     }
 
-    const remove = (index) => {
+
+    const remove = (index: number) => {
+        if (doc === null) {
+            throw Error('automerge store not initialized')
+        }
+
         doc.del(itemsRef, index)
         updateStore()
     }
 
     const updateItemField = (index: number, key: string, value: boolean | string | number) => {
+        if (doc === null) {
+            throw Error('automerge store not initialized')
+        }
         let theItem: string = <string>doc.value(itemsRef, index)[1]
         doc.set(theItem, key, value)
         updateStore()
@@ -36,6 +62,10 @@ export const createAutomergeStore = () => {
     // automerge store, whereas clearCompleted is app specific - and be at a higher
     // level that wraps or uses the automerge store.
     const clearCompleted = () => {
+        if (doc === null) {
+            throw Error('automerge store not initialized')
+        }
+
         let changed = false;
 
         for (let i = doc.length(itemsRef) - 1; i >= 0; i--) {
@@ -52,6 +82,20 @@ export const createAutomergeStore = () => {
         }
     }
 
+    const toggleAll = () => {
+        if (doc === null) {
+            throw Error('automerge store not initialized')
+        }
+
+        for (let i = doc.length(itemsRef) - 1; i >= 0; i--) {
+            const theItemRef: string = <string>doc.value(itemsRef, i)[1]
+            const completed = <boolean>doc.value(theItemRef, 'completed')[1]
+            doc.set(theItemRef, 'completed', !completed)
+        }
+
+        updateStore();
+    }
+
     // this actually updates the value of the store for svelte consumers
     // it should be called after any updates of automerge document
     const updateStore = () => {
@@ -66,16 +110,6 @@ export const createAutomergeStore = () => {
             items.push(obj)
         }
         set(items)
-    }
-
-    const toggleAll = () => {
-        for (let i = doc.length(itemsRef) - 1; i >= 0; i--) {
-            const theItemRef: string = <string>doc.value(itemsRef, i)[1]
-            const completed = <boolean>doc.value(theItemRef, 'completed')[1]
-            doc.set(theItemRef, 'completed', !completed)
-        }
-
-        updateStore();
     }
     return {
         subscribe,
