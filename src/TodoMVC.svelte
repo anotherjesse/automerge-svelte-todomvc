@@ -76,6 +76,20 @@
 
 <header class="header">
   <h1>todo</h1>
+  <h2>
+    <button
+      style="border: 1px solid black; margin: 4px"
+      on:click={() => store.loadFileHandle()}>Open Existing File</button
+    >
+    <button
+      style="border: 1px solid black; margin: 4px"
+      on:click={() => store.newFileHandle()}>New Save File</button
+    >
+    <button
+      style="border: 1px solid black; margin: 4px"
+      on:click={() => store.closeFile()}>Close File</button
+    >
+  </h2>
   <input
     class="new-todo"
     on:keydown={createNew}

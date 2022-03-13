@@ -19,6 +19,7 @@ export const createAutomergeStore = () => {
 
     let doc: Automerge.Automerge = null;
     let itemsRef: string = null;
+    let fileHandle: FileSystemFileHandle = null;
     const ROOT = '_root';
 
     // FIXME(ja): issues with this approach:
@@ -100,7 +101,7 @@ export const createAutomergeStore = () => {
 
     // this actually updates the value of the store for svelte consumers
     // it should be called after any updates of automerge document
-    const updateStore = () => {
+    const updateStore = (skipSave?: boolean) => {
         let items: Array<StoreItem> = [];
         for (let i = 0; i < doc.length(itemsRef); i++) {
             let theItemRef: string = <string>doc.value(itemsRef, i)[1]
@@ -112,49 +113,111 @@ export const createAutomergeStore = () => {
             items.push(obj)
         }
         set(items)
+
+        if (!skipSave) {
+            save()
+        } else {
+            console.log('skipped save')
+        }
     }
+
+    const save = async () => {
+        if (fileHandle) {
+            const writable = await fileHandle.createWritable()
+            const data = doc.save()
+            console.log('saving', data)
+            await writable.write(data)
+            await writable.close()
+        }
+    }
+
+    const load = async () => {
+        if (fileHandle) {
+            const file = await fileHandle.getFile()
+            const contents = await file.arrayBuffer()
+            const data = new Uint8Array(contents)
+
+            console.log('loading', data)
+            doc = Automerge.loadDoc(data)
+            updateStore(true);
+        }
+    }
+
+    const closeFile = () => {
+        console.log('forgetting about the file')
+        fileHandle = null;
+    }
+
+    const setFile = (handle: FileSystemFileHandle) => {
+        fileHandle = handle
+    }
+
+    const loadFileHandle = async () => {
+        const options = {
+            mode: 'readwrite' as FileSystemPermissionMode,
+            suggestedName: 'todo.mrg',
+            types: [
+                {
+                    description: 'Automerge Files',
+                    accept: {
+                        'application/octet-stream': ['.mrg'],
+                    },
+                },
+            ],
+        }
+
+        const [handle] = await window.showOpenFilePicker(options)
+        if ((await handle.queryPermission(options)) === 'granted' ||
+            (await handle.requestPermission(options)) === 'granted') {
+            setFile(handle)
+            load();
+        }
+    }
+
+    const newFileHandle = async () => {
+        const options = {
+            mode: 'readwrite' as FileSystemPermissionMode,
+            suggestedName: 'todo.mrg',
+            types: [
+                {
+                    description: 'Automerge Files',
+                    accept: {
+                        'application/octet-stream': ['.mrg'],
+                    },
+                },
+            ],
+        }
+
+        const handle = await window.showSaveFilePicker(options)
+        if ((await handle.queryPermission(options)) === 'granted' ||
+            (await handle.requestPermission(options)) === 'granted') {
+            setFile(handle)
+            save();
+        }
+    }
+
+
+
     return {
         subscribe,
         add,
         remove,
         updateItemField,
         clearCompleted,
+        closeFile,
+        save,
+        load,
+        setFile,
+        loadFileHandle,
+        newFileHandle,
         toggleAll
     };
 }
 
 
-// let save = async (doc, fileHandle) => {
-//     const writable = await fileHandle.createWritable()
-//     await writable.write(doc.save())
-//     await writable.close()
-// }
 
 // let load = async () => {
 //     fileHandle = await IDB.get('file')
-// }
-
-// load()
-
-// $: try {
-//     if (fileHandle) {
-//         save(doc, fileHandle)
-//     }
-// } catch (err) {
-//     // noop
-// }
-
-// const options = {
-//     mode: 'readwrite',
-//     suggestedName: 'todo.mrg',
-//     types: [
-//         {
-//             description: 'Automerge Files',
-//             accept: {
-//                 'application/octet-stream': ['.mrg'],
-//             },
-//         },
-//     ],
 // }
 
 // async function newFileHandle() {
