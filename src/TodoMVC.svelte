@@ -1,14 +1,9 @@
 <script lang="ts">
   import { createAutomergeStore } from './store.js'
-  const ENTER_KEY = 13
-  const ESCAPE_KEY = 27
-
-  let fileHandle
 
   const store = createAutomergeStore()
-  console.log('ok')
-  let currentFilter = 'all'
-  let editing = null
+  let currentFilter: string = 'all'
+  let editing: number = null
 
   const updateView = () => {
     currentFilter = 'all'
@@ -22,8 +17,8 @@
   window.addEventListener('hashchange', updateView)
   updateView()
 
-  function createNew(event: KeyboardEvent) {
-    if (event.which === ENTER_KEY) {
+  function createNew(event: KeyboardEvent & { target: HTMLInputElement }) {
+    if (event.key === 'Enter') {
       store.add({
         id: uuid(),
         description: event.target.value,
@@ -33,9 +28,9 @@
     }
   }
 
-  function handleEdit(event: KeyboardEvent) {
-    if (event.which === ENTER_KEY) (event.target as HTMLInputElement).blur()
-    else if (event.which === ESCAPE_KEY) editing = null
+  function handleEdit(event: KeyboardEvent & { target: HTMLInputElement }) {
+    if (event.key === 'Enter') event.target.blur()
+    else if (event.key === 'Escape') editing = null
   }
 
   function updateDescription(event: Event & { target: HTMLInputElement }) {
@@ -53,7 +48,7 @@
     store.updateItemField(index, 'completed', event.target.checked)
   }
 
-  function uuid() {
+  function uuid(): string {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(
       /[xy]/g,
       function (c) {
@@ -112,7 +107,7 @@
               class="toggle"
               type="checkbox"
               checked={item.completed}
-              on:change={(event) => setCompleted(event, index)}
+              on:change={(evt) => setCompleted(evt, index)}
             />
             <label on:dblclick={() => (editing = index)}
               >{item.description}</label
