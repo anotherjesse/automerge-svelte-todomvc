@@ -13,7 +13,7 @@ export const createAutomergeStore = () => {
     const doc = Automerge.create()
     const ROOT = '_root'
     doc.set_object(ROOT, 'items', [])
-    const itemsRef = doc.value(ROOT, 'items')[1]
+    const itemsRef: string = <string>doc.value(ROOT, 'items')[1]
 
     const add = (item) => {
         doc.push_object(itemsRef, item)
@@ -25,8 +25,8 @@ export const createAutomergeStore = () => {
         updateStore()
     }
 
-    const updateItemField = (index, key, value) => {
-        let theItem = doc.value(itemsRef, index)[1]
+    const updateItemField = (index: number, key: string, value: boolean | string | number) => {
+        let theItem: string = <string>doc.value(itemsRef, index)[1]
         doc.set(theItem, key, value)
         updateStore()
     }
@@ -39,8 +39,8 @@ export const createAutomergeStore = () => {
         let changed = false;
 
         for (let i = doc.length(itemsRef) - 1; i >= 0; i--) {
-            const theItemRef = doc.value(itemsRef, i)[1]
-            const completed = doc.value(theItemRef, 'completed')[1]
+            const theItemRef: string = <string>doc.value(itemsRef, i)[1]
+            const completed: boolean = <boolean>doc.value(theItemRef, 'completed')[1]
             if (completed) {
                 doc.del(itemsRef, i)
                 changed = true;
@@ -52,13 +52,12 @@ export const createAutomergeStore = () => {
         }
     }
 
-
     // this actually updates the value of the store for svelte consumers
     // it should be called after any updates of automerge document
     const updateStore = () => {
         let items = [];
         for (let i = 0; i < doc.length(itemsRef); i++) {
-            let theItemRef = doc.value(itemsRef, i)[1]
+            let theItemRef: string = <string>doc.value(itemsRef, i)[1]
             let obj = {}
 
             doc.keys(theItemRef).forEach((k) => {
@@ -71,8 +70,8 @@ export const createAutomergeStore = () => {
 
     const toggleAll = () => {
         for (let i = doc.length(itemsRef) - 1; i >= 0; i--) {
-            const theItemRef = doc.value(itemsRef, i)[1]
-            const completed = doc.value(theItemRef, 'completed')[1]
+            const theItemRef: string = <string>doc.value(itemsRef, i)[1]
+            const completed = <boolean>doc.value(theItemRef, 'completed')[1]
             doc.set(theItemRef, 'completed', !completed)
         }
 

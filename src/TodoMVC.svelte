@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { createAutomergeStore } from './store.js'
   const ENTER_KEY = 13
   const ESCAPE_KEY = 27
@@ -22,7 +22,7 @@
   window.addEventListener('hashchange', updateView)
   updateView()
 
-  function createNew(event) {
+  function createNew(event: KeyboardEvent) {
     if (event.which === ENTER_KEY) {
       store.add({
         id: uuid(),
@@ -33,17 +33,24 @@
     }
   }
 
-  function handleEdit(event) {
-    if (event.which === ENTER_KEY) event.target.blur()
+  function handleEdit(event: KeyboardEvent) {
+    if (event.which === ENTER_KEY) (event.target as HTMLInputElement).blur()
     else if (event.which === ESCAPE_KEY) editing = null
   }
 
-  function updateDescription(event) {
+  function updateDescription(event: Event & { target: HTMLInputElement }) {
     // only updateDescription if editing is still set
     if (editing != null) {
       store.updateItemField(editing, 'description', event.target.value)
       editing = null
     }
+  }
+
+  function setCompleted(
+    event: Event & { target: HTMLInputElement },
+    index: number
+  ) {
+    store.updateItemField(index, 'completed', event.target.checked)
   }
 
   function uuid() {
@@ -73,15 +80,6 @@
 </script>
 
 <header class="header">
-  <div>
-    <button on:click={() => newFileHandle()}>New...</button>
-    {#if fileHandle}<button on:click={() => loadFileHandle(fileHandle)}
-        >{fileHandle.name}</button
-      >{/if}
-    <button on:click={() => loadFileHandle()}>Open...</button>
-    <button on:click={() => saveFileHandle()}>Save As...</button>
-  </div>
-
   <h1>todo</h1>
   <input
     class="new-todo"
@@ -114,8 +112,7 @@
               class="toggle"
               type="checkbox"
               checked={item.completed}
-              on:change={(event) =>
-                store.updateItemField(index, 'completed', event.target.checked)}
+              on:change={(event) => setCompleted(event, index)}
             />
             <label on:dblclick={() => (editing = index)}
               >{item.description}</label

@@ -8,11 +8,11 @@
 
 - [x] move automerge to a store
 - [x] fix complete/description/delete
-- [ ] can automerge wasm be in the store?
+- [ ] can automerge wasm init when needed (in the store?)
 - [ ] re-add filesystem stuff to automerge store
 - [ ] the new/open/save popup nightmare
-- [ ] switch back to typescript: store.js -> store.ts
-- [ ] re-create project to have a modern svelte/rollup/... setup
+- [?] switch back to typescript: store.js -> store.ts
+- [x] re-create project to have a modern svelte/rollup/... setup
 
 ## TODO Better!
 - [ ] should index be used for updates to items - it seems brittle?
