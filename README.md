@@ -11,7 +11,7 @@
 - [ ] can automerge wasm init when needed (in the store?)
 - [ ] re-add filesystem stuff to automerge store
 - [ ] the new/open/save popup nightmare
-- [?] switch back to typescript: store.js -> store.ts
+- [x] switch back to typescript: store.js -> store.ts
 - [x] re-create project to have a modern svelte/rollup/... setup
 
 ## TODO Better!
