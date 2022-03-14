@@ -8,7 +8,7 @@
     "dev": "rollup -c -w",
     "predeploy": "npm run build",
     "start": "sirv public --no-clear",
-    "update_automerge": "cp node_modules/automerge-wasm-pack/web/index_bg.wasm public/build",
+    "update_automerge": "cp node_modules/automerge-wasm-pack/web/index_bg.wasm public/",
     "check": "svelte-check --tsconfig ./tsconfig.json"
   },
   "files": [
