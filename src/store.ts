@@ -139,6 +139,7 @@ export const createAutomergeStore = () => {
 
             console.log('loading', data)
             doc = Automerge.loadDoc(data)
+            itemsRef = <string>doc.value(ROOT, 'items')[1];
             updateStore(true);
         }
     }
