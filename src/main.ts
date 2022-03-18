@@ -1,5 +1,7 @@
-import TodoMVC from './TodoMVC.svelte';
+import App from './App.svelte';
 
-window.todomvc = new TodoMVC({
+const app = new App({
 	target: document.querySelector('.todoapp')
 })
+
+export default app
