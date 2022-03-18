@@ -38,6 +38,7 @@
   }
 </script>
 
+<h1>amt</h1>
 <nav>
   <button on:click={newMemoryStore}>New Memory</button>
   <button on:click={loadFileStore}>Load File</button>

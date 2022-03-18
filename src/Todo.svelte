@@ -48,7 +48,6 @@
 
 <div id="todoapp">
   <header class="header">
-    <h1>todo</h1>
     <input
       class="new-todo"
       on:keydown={createNew}
