@@ -14,6 +14,15 @@
 - [x] switch back to typescript: store.js -> store.ts
 - [x] re-create project to have a modern svelte/rollup/... setup
 
+## collab story:
+
+- [ ] user 1 creates a new document, puts it in their dropbox
+- [ ] user 1 shares a "dropbox direct link" with user 2
+- [ ] user 2 opens the document via link
+- [ ] user 2 can refresh changes from dropbox as user 1 makes changes
+- [ ] user 2 has changes, makes a local version (in their dropbox)
+- [ ] user 2 can share their direct link with user 1, enabling collaboration?
+
 ## TODO Better!
 - [ ] initing automerge in the store, multiple stores results in "actor" failure for the first store
 - [ ] should index be used for updates to items - it seems brittle?
