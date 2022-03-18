@@ -1,7 +1,8 @@
 <script lang="ts">
-  import { createAutomergeStore } from './store.js'
+  import { loadFileDialog, saveFileDialog } from './automerge-store'
+  import { createAppStore } from './app-store'
 
-  const store = createAutomergeStore()
+  const store = createAppStore()
   let currentFilter: string = 'all'
   let editing: number = null
 
@@ -19,11 +20,7 @@
 
   function createNew(event: KeyboardEvent & { target: HTMLInputElement }) {
     if (event.key === 'Enter') {
-      store.add({
-        id: uuid(),
-        description: event.target.value,
-        completed: false,
-      })
+      store.addTodo(event.target.value)
       event.target.value = ''
     }
   }
@@ -36,7 +33,7 @@
   function updateDescription(event: Event & { target: HTMLInputElement }) {
     // only updateDescription if editing is still set
     if (editing != null) {
-      store.updateItemField(editing, 'description', event.target.value)
+      store.updateTodo(editing, 'description', event.target.value)
       editing = null
     }
   }
@@ -45,18 +42,25 @@
     event: Event & { target: HTMLInputElement },
     index: number
   ) {
-    store.updateItemField(index, 'completed', event.target.checked)
+    store.updateTodo(index, 'completed', event.target.checked)
   }
 
-  function uuid(): string {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(
-      /[xy]/g,
-      function (c) {
-        var r = (Math.random() * 16) | 0,
-          v = c == 'x' ? r : (r & 0x3) | 0x8
-        return v.toString(16)
-      }
-    )
+  const openExisting = async () => {
+    const file = await loadFileDialog()
+    if (file) {
+      store.loadAndSaveToFile(file)
+    }
+  }
+
+  const newSave = async () => {
+    const file = await saveFileDialog()
+    if (file) {
+      store.newSaveFile(file)
+    }
+  }
+
+  const closeFile = () => {
+    store.closeFile()
   }
 
   // FIXME(ja): this is a hack to get the store to work with the existing logic
@@ -77,17 +81,14 @@
 <header class="header">
   <h1>todo</h1>
   <h2>
-    <button
-      style="border: 1px solid black; margin: 4px"
-      on:click={() => store.loadFileHandle()}>Open Existing File</button
+    <button style="border: 1px solid black; margin: 4px" on:click={openExisting}
+      >Open Existing File</button
     >
-    <button
-      style="border: 1px solid black; margin: 4px"
-      on:click={() => store.newFileHandle()}>New Save File</button
+    <button style="border: 1px solid black; margin: 4px" on:click={newSave}
+      >New Save File</button
     >
-    <button
-      style="border: 1px solid black; margin: 4px"
-      on:click={() => store.closeFile()}>Close File</button
+    <button style="border: 1px solid black; margin: 4px" on:click={closeFile}
+      >Close File</button
     >
   </h2>
   <input
@@ -126,7 +127,7 @@
             <label on:dblclick={() => (editing = index)}
               >{item.description}</label
             >
-            <button on:click={() => store.remove(index)} class="destroy" />
+            <button on:click={() => store.deleteTodo(index)} class="destroy" />
           </div>
 
           {#if editing === index}
