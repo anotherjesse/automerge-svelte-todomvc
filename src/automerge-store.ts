@@ -23,7 +23,7 @@ const fileOptions = {
 }
 
 
-
+init("/index_bg.wasm").then(() => console.log('automerge ready?'))
 
 type StoreItem = {
     [key: string]: string | number | boolean
@@ -50,7 +50,6 @@ export const saveFileDialog = async (): Promise<FileSystemFileHandle> => {
 
 
 export const automerge_store = () => {
-    const { subscribe, set, update } = writable(null);
 
     let fileHandle: FileSystemFileHandle = null;
     const ROOT = '_root';
@@ -60,11 +59,10 @@ export const automerge_store = () => {
     // - is there a way for this to become async? / expose better UX flow when automerge 
     // - doesn't initialize (instead of throwing when trying to mutate)
 
-    init("/index_bg.wasm").then(() => {
-        let doc = Automerge.create()
-        doc.set_object(ROOT, 'items', [])
-        set(doc)
-    });
+    let doc = Automerge.create()
+    doc.set_object(ROOT, 'items', [])
+
+    const { subscribe, set, update } = writable(doc);
 
 
     // FIXME(ja): I incorrectly designed this, assuming that doc was an
@@ -109,7 +107,7 @@ export const automerge_store = () => {
 
     const save = async () => {
         if (fileHandle) {
-            console.log('saving to file')
+            console.log('saving to file', fileHandle.name)
             const writable = await fileHandle.createWritable()
 
             // FIXME(ja): using update to get a reference to the (mutable) doc,
@@ -141,6 +139,7 @@ export const automerge_store = () => {
 
             console.log('loading', data)
             const doc = Automerge.loadDoc(data)
+
             set(doc)
         }
     }

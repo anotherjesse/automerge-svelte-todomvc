@@ -4,7 +4,7 @@ body {
 	padding: 0;
 }
 
-button {
+button.app {
 	margin: 0;
 	padding: 0;
 	border: 0;
@@ -33,6 +33,14 @@ body {
 	font-weight: 300;
 }
 
+.filters button.selected {
+    color: black;
+  }
+  .filters button {
+    color: gray;
+  }
+
+
 :focus {
 	outline: 0;
 }
@@ -42,11 +50,8 @@ body {
 }
 
 .todoapp {
-	background: #fff;
 	margin: 130px 0 40px 0;
 	position: relative;
-	box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2),
-	            0 25px 50px 0 rgba(0, 0, 0, 0.1);
 }
 
 .todoapp input::-webkit-input-placeholder {
@@ -278,7 +283,6 @@ body {
 	            0 16px 0 -6px #f6f6f6,
 	            0 17px 2px -6px rgba(0, 0, 0, 0.2);
 }
-
 .todo-count {
 	float: left;
 	text-align: left;
