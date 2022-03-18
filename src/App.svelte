@@ -10,7 +10,6 @@
 
   const newMemoryStore = () => {
     const store = createAppStore()
-    console.log(store)
     store.fileName = 'in-memory'
     stores = [...stores, store]
   }
@@ -54,10 +53,7 @@
   }
 
   function updateFilenames() {
-    idb.keys().then((keys) => {
-      filenames = keys
-      console.log(filenames)
-    })
+    idb.keys().then((keys) => (filenames = keys))
   }
 
   updateFilenames()
