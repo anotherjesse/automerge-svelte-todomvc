@@ -144,6 +144,39 @@ export const automerge_store = () => {
         }
     }
 
+    const merge_icloud = async (url) => {
+        // https://www.icloud.com/iclouddrive/03d6YSnhJ50zeIoVLcdaSTQzw#todo
+        // we need to extract the id of the document from the url
+        // and then fetch metdata from icloud resolve
+
+        const id = url.split('#')[0].split('/').pop()
+        // get icloud metadata
+
+        const json = await fetch("https://ckdatabasews.icloud.com/database/1/com.apple.cloudkit/production/public/records/resolve", {
+            "body": JSON.stringify({
+                "shortGUIDs": [{ "value": id }],
+            }),
+            "method": "POST",
+        }).then(r => r.json())
+
+        const result = json.results[0];
+        if (result.serverErrorCode) {
+            console.log('error', result.serverErrorCode)
+            return
+        }
+
+        const metadata = result.rootRecord.fields.fileContent.value
+        const { downloadURL } = metadata;
+        fetch(downloadURL).then(r => r.arrayBuffer()).then(contents => {
+            const data = new Uint8Array(contents)
+            const remoteDoc = Automerge.loadDoc(data)
+            update(doc => {
+                doc.merge(remoteDoc);
+                return doc
+            })
+        })
+    }
+
     const closeFile = () => {
         console.log('forgetting about the file')
         fileHandle = null;
@@ -179,5 +212,6 @@ export const automerge_store = () => {
         loadAndSaveToFile,
         newSaveFile,
         closeFile,
+        merge_icloud
     };
 }

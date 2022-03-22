@@ -56,6 +56,14 @@
     idb.keys().then((keys) => (filenames = keys))
   }
 
+  const mergeIcloud = (store) => {
+    const url = window.prompt('url plz?')
+
+    if (url) {
+      store.merge_icloud(url)
+    }
+  }
+
   updateFilenames()
 </script>
 
@@ -85,6 +93,7 @@
   <h2>
     {store.fileName}
     <button on:click={() => closeStore(store)}>Close File</button>
+    <button on:click={() => mergeIcloud(store)}>Merge icloud remote</button>
   </h2>
 
   <Todo {store} />
