@@ -1,12 +1,16 @@
 <script>
   import * as idb from 'idb-keyval'
-  import { createAppStore } from './app-store'
-  import { loadFileDialog, saveFileDialog } from './automerge-store'
-
   import Todo from './Todo.svelte'
+  import { createAppStore } from './app-store'
 
-  let stores = []
+  import {
+    loadFileDialog,
+    saveFileDialog,
+    openFolderDialog,
+  } from './automerge-store'
+
   let filenames = []
+  let stores = []
 
   const newMemoryStore = () => {
     const store = createAppStore()
@@ -48,6 +52,36 @@
     }
   }
 
+  const openFolder = async () => {
+    const handle = await openFolderDialog()
+    if (!handle) return
+
+    const files = {}
+
+    for await (const entry of handle.values()) {
+      // filenames look like "todo-name.mrg"
+      // use regex to extract the name
+      const match = entry.name.match(/^todo.(.+)\.mrg$/)
+      if (match && entry.kind === 'file') {
+        files[match[1]] = entry
+      }
+    }
+
+    console.log(files)
+    const name = window.prompt('who are you?')
+    console.log({ name })
+    const file = files[name]
+
+    if (!file) return
+
+    console.log(file)
+    const store = createAppStore()
+    store.fileName = file.name
+    store.files = files
+    store.loadAndSaveToFile(file)
+    stores = [...stores, store]
+  }
+
   const closeStore = (store) => {
     stores = stores.filter((s) => s !== store)
   }
@@ -72,6 +106,7 @@
   <button on:click={newMemoryStore}>New Memory</button>
   <button on:click={loadFileStore}>Load File</button>
   <button on:click={newFileStore}>New File</button>
+  <button on:click={openFolder}>Open Folder</button>
 </nav>
 
 {#if filenames.length > 0}
@@ -93,6 +128,16 @@
   <h2>
     {store.fileName}
     <button on:click={() => closeStore(store)}>Close File</button>
+
+    {#if store.files}
+      {#each Object.entries(store.files) as [name, file]}
+        {#if store.fileName !== file.name}
+          <button on:click={() => store.merge_file(file)}>
+            merge {name}
+          </button>
+        {/if}
+      {/each}
+    {/if}
     <button on:click={() => mergeIcloud(store)}>Merge icloud remote</button>
   </h2>
 

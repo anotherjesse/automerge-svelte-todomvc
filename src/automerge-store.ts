@@ -22,6 +22,11 @@ const fileOptions = {
     ],
 }
 
+const directoryOptions = {
+    mode: 'readwrite' as FileSystemPermissionMode,
+    id: 'amtodo',
+}
+
 
 init("/index_bg.wasm").then(() => console.log('automerge ready?'))
 
@@ -44,6 +49,15 @@ export const saveFileDialog = async (): Promise<FileSystemFileHandle> => {
         return handle;
     }
 }
+
+export const openFolderDialog = async (): Promise<FileSystemDirectoryHandle> => {
+    const handle = await window.showDirectoryPicker(fileOptions)
+    if ((await handle.queryPermission(fileOptions)) === 'granted' ||
+        (await handle.requestPermission(fileOptions)) === 'granted') {
+        return handle;
+    }
+}
+
 
 // FIXME(ja): there is no good place to hook the save handler...
 // it should be able to happen after batch updates / any mutations
@@ -107,6 +121,7 @@ export const automerge_store = () => {
 
     const save = async () => {
         if (fileHandle) {
+            // fixme(ja): add a limiter to prevent multiple saves
             console.log('saving to file', fileHandle.name)
             const writable = await fileHandle.createWritable()
 
@@ -177,6 +192,21 @@ export const automerge_store = () => {
         })
     }
 
+    const merge_file = async (handle: FileSystemFileHandle) => {
+        const file = await handle.getFile()
+        const contents = await file.arrayBuffer()
+        const data = new Uint8Array(contents)
+
+        console.log('loading', data)
+        const remoteDoc = Automerge.loadDoc(data)
+
+        update(doc => {
+            doc.merge(remoteDoc);
+            return doc
+        })
+        setTimeout(save, 100); // this is bad
+    }
+
     const closeFile = () => {
         console.log('forgetting about the file')
         fileHandle = null;
@@ -212,6 +242,7 @@ export const automerge_store = () => {
         loadAndSaveToFile,
         newSaveFile,
         closeFile,
-        merge_icloud
+        merge_icloud,
+        merge_file
     };
 }
