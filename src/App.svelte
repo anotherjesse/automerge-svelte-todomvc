@@ -103,9 +103,9 @@
 
 <h1>amt</h1>
 <nav>
-  <button on:click={newMemoryStore}>New Memory</button>
+  <!-- <button on:click={newMemoryStore}>New Memory</button>
   <button on:click={loadFileStore}>Load File</button>
-  <button on:click={newFileStore}>New File</button>
+  <button on:click={newFileStore}>New File</button> -->
   <button on:click={openFolder}>Open Folder</button>
 </nav>
 
@@ -137,8 +137,9 @@
           </button>
         {/if}
       {/each}
+    {:else}
+      <button on:click={() => mergeIcloud(store)}>Merge icloud remote</button>
     {/if}
-    <button on:click={() => mergeIcloud(store)}>Merge icloud remote</button>
   </h2>
 
   <Todo {store} />
