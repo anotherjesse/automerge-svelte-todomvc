@@ -148,7 +148,6 @@ export const automerge_store = () => {
             const contents = await file.arrayBuffer()
             const data = new Uint8Array(contents)
 
-            console.log('loading', data)
             const doc = Automerge.loadDoc(data)
 
             set(doc)
@@ -160,7 +159,6 @@ export const automerge_store = () => {
         const contents = await file.arrayBuffer()
         const data = new Uint8Array(contents)
 
-        console.log('loading', data)
         const remoteDoc = Automerge.loadDoc(data)
 
         update(doc => {
