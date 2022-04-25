@@ -46,7 +46,6 @@ export const createAppStore = () => {
         loadAndSaveToFile: am_store.loadAndSaveToFile,
         newSaveFile: am_store.newSaveFile,
         closeFile: am_store.closeFile,
-        merge_icloud: am_store.merge_icloud,
         merge_file: am_store.merge_file,
         addTodo: (description: string) =>
             am_store.addItem({
