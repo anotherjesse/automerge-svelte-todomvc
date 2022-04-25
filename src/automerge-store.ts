@@ -207,7 +207,6 @@ export const automerge_store = () => {
                 setTimeout(save, 100); // this is bad
             }
 
-
             return doc
         })
     }
@@ -246,6 +245,6 @@ export const automerge_store = () => {
         closeFile,
         merge_file,
         merge_all,
-        ensurePermissions
+        ensurePermissions,
     };
 }

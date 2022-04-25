@@ -114,6 +114,7 @@
         {/if}
       {/each}
       <button on:click={() => store.merge_others()}> merge all others </button>
+      <button on:click={() => store.watcher()}> watch </button>
     {/if}
   </h2>
 

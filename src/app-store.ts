@@ -46,6 +46,24 @@ export const createAppStore = (handle, files, file) => {
     console.log(others)
     am_store.loadAndSaveToFile(file)
 
+    // fixme(ja): this interval runs forever - even when the store is closed
+    // plus it should be a singleton
+    const merge_sizes = {}
+    const check_others = async () => {
+
+        // let's assume the sizes only increase...
+
+        for (var file of others) {
+            const size = (await file.getFile()).size;
+            if (!(file.name in merge_sizes) || size > merge_sizes[file.name]) {
+                await am_store.merge_file(file)
+                merge_sizes[file.name] = size;
+            }
+        }
+    }
+
+    let watcher
+
     return {
         ...app_store,
         files,
@@ -55,6 +73,14 @@ export const createAppStore = (handle, files, file) => {
         closeFile: am_store.closeFile,
         merge_file: am_store.merge_file,
         merge_others: () => am_store.merge_all(others),
+        watcher: () => {
+            if (watcher) {
+                clearInterval(watcher)
+                watcher = null;
+            } else {
+                watcher = setInterval(check_others, 1000)
+            }
+        },
         addTodo: (description: string) =>
             am_store.addItem({
                 id: uuid(),
