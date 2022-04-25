@@ -28,7 +28,7 @@ const directoryOptions = {
 }
 
 
-init("/index_bg.wasm").then(() => console.log('automerge ready?'))
+init("/bindgen_bg.wasm").then(() => console.log('automerge ready?'))
 
 type StoreItem = {
     [key: string]: string | number | boolean
@@ -70,7 +70,7 @@ export const automerge_store = () => {
     // - doesn't initialize (instead of throwing when trying to mutate)
 
     let doc = Automerge.create()
-    doc.set_object(ROOT, 'items', [])
+    doc.putObject(ROOT, 'items', []);
 
     const { subscribe, set, update } = writable(doc);
 
@@ -84,8 +84,8 @@ export const automerge_store = () => {
             if (doc === null) {
                 throw Error('automerge store not initialized')
             }
-            let itemsRef = <string>doc.value(ROOT, 'items')[1];
-            doc.push_object(itemsRef, item)
+            let itemsRef = <string>doc.get(ROOT, 'items')[1];
+            doc.pushObject(itemsRef, item)
             setTimeout(save, 100); // this is bad
             return doc
         })
@@ -96,8 +96,8 @@ export const automerge_store = () => {
                 throw Error('automerge store not initialized')
             }
 
-            let itemsRef = <string>doc.value(ROOT, 'items')[1];
-            doc.del(itemsRef, index)
+            let itemsRef = <string>doc.get(ROOT, 'items')[1];
+            doc.delete(itemsRef, index)
             setTimeout(save, 100); // this is bad
             return doc
         })
@@ -108,9 +108,9 @@ export const automerge_store = () => {
                 throw Error('automerge store not initialized')
             }
 
-            let itemsRef = <string>doc.value(ROOT, 'items')[1];
-            let theItem: string = <string>doc.value(itemsRef, index)[1]
-            doc.set(theItem, key, value)
+            let itemsRef = <string>doc.get(ROOT, 'items')[1];
+            let theItem: string = <string>doc.get(itemsRef, index)[1]
+            doc.put(theItem, key, value)
             setTimeout(save, 100); // this is bad
             return doc
         })
@@ -148,7 +148,7 @@ export const automerge_store = () => {
             const contents = await file.arrayBuffer()
             const data = new Uint8Array(contents)
 
-            const doc = Automerge.loadDoc(data)
+            const doc = Automerge.load(data)
 
             set(doc)
         }
@@ -159,7 +159,7 @@ export const automerge_store = () => {
         const contents = await file.arrayBuffer()
         const data = new Uint8Array(contents)
 
-        const remoteDoc = Automerge.loadDoc(data)
+        const remoteDoc = Automerge.load(data)
 
         update(doc => {
             doc.merge(remoteDoc);
@@ -176,7 +176,7 @@ export const automerge_store = () => {
             const contents = await handle.arrayBuffer()
             const data = new Uint8Array(contents)
 
-            const remoteDoc = Automerge.loadDoc(data)
+            const remoteDoc = Automerge.load(data)
             console.log(remoteDoc)
             update(doc => {
                 doc.merge(remoteDoc);

@@ -11,7 +11,8 @@
 - [ ] loop - how to watch files and merge only when changes?
 - [ ] ask the name on a new device only (when not loaded before - use IDB?)
 - [ ] no way to create a new todo project on disk
-- [ ] update automerge WASM
+- [ ] bug: clear completed / toggle all doesn't save
+- [x] update automerge WASM
 - [ ] investigate js bindings
 
 ### OLD STUFF

@@ -178,10 +178,10 @@
     "normalize-path" "^3.0.0"
     "picomatch" "^2.0.4"
 
-"automerge-wasm-pack@^0.0.19":
-  "integrity" "sha512-kMQU+LgUp0ITB6SXVZg8ZsivCghRcIJ8oLS58Ddw0TzbYcKh+0euFidrG35WFek7FbVh4QYezhNSL7TdlIof/Q=="
-  "resolved" "https://registry.npmjs.org/automerge-wasm-pack/-/automerge-wasm-pack-0.0.19.tgz"
-  "version" "0.0.19"
+"automerge-wasm-pack@^0.0.27":
+  "integrity" "sha512-/ryCL9N8Bj+icTkFZHNNC7QPHRxLffAgCl3eCu0U10AgyzeJC16hTlauvjmYj0lIJoPxpEZV7x4AUfzqPv9leQ=="
+  "resolved" "https://registry.npmjs.org/automerge-wasm-pack/-/automerge-wasm-pack-0.0.27.tgz"
+  "version" "0.0.27"
 
 "balanced-match@^1.0.0":
   "integrity" "sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw=="

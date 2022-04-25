@@ -26,14 +26,15 @@ export const createAppStore = (handle, files, file) => {
     const app_store = derived(am_store, doc => {
         let items: Array<StoreItem> = [];
         if (doc) {
-            let itemsRef = <string>doc.value(ROOT, 'items')[1];
+
+            let itemsRef = <string>doc.get(ROOT, 'items')[1];
 
             for (let i = 0; i < doc.length(itemsRef); i++) {
-                let theItemRef: string = <string>doc.value(itemsRef, i)[1]
+                let theItemRef: string = <string>doc.get(itemsRef, i)[1]
                 let obj = {}
 
                 doc.keys(theItemRef).forEach((k) => {
-                    obj[k] = doc.value(theItemRef, k)[1]
+                    obj[k] = doc.get(theItemRef, k)[1]
                 })
                 items.push(obj)
             }
@@ -66,15 +67,17 @@ export const createAppStore = (handle, files, file) => {
             am_store.updateItemField(index, key, value),
         clearCompleted: () =>
             am_store.update(doc => {
-                const itemsRef = <string>doc.value(ROOT, 'items')[1];
+                const itemsRef = <string>doc.get(ROOT, 'items')[1];
 
                 for (let i = doc.length(itemsRef) - 1; i >= 0; i--) {
-                    const theItemRef: string = <string>doc.value(itemsRef, i)[1]
-                    const completed: boolean = <boolean>doc.value(theItemRef, 'completed')[1]
+                    const theItemRef: string = <string>doc.get(itemsRef, i)[1]
+                    const completed: boolean = <boolean>doc.get(theItemRef, 'completed')[1]
                     if (completed) {
-                        doc.del(itemsRef, i)
+                        doc.delete(itemsRef, i)
                     }
                 }
+
+                // FIXME(ja): this isn't saving?
 
                 // FIXME(ja): copilot recommends just setting to a new array? this would work, but isn't semantic
                 // let newItems = items.filter(item => !item.completed)
@@ -86,13 +89,13 @@ export const createAppStore = (handle, files, file) => {
                 return doc
             }),
         toggleAll: () => am_store.update(doc => {
-            const itemsRef = <string>doc.value(ROOT, 'items')[1];
+            const itemsRef = <string>doc.get(ROOT, 'items')[1];
 
             for (let i = doc.length(itemsRef) - 1; i >= 0; i--) {
-                const theItemRef: string = <string>doc.value(itemsRef, i)[1]
-                const completed: boolean = <boolean>doc.value(theItemRef, 'completed')[1]
+                const theItemRef: string = <string>doc.get(itemsRef, i)[1]
+                const completed: boolean = <boolean>doc.get(theItemRef, 'completed')[1]
                 // FIXME(ja): how does one do batch updates (as far as history goes)?
-                doc.set(theItemRef, 'completed', !completed)
+                doc.put(theItemRef, 'completed', !completed)
             }
 
             return doc;
