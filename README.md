@@ -4,6 +4,18 @@
 
 [TodoMVC](http://todomvc.com/) implemented in [Svelte](https://github.com/sveltejs/svelte). The entire app weighs 3.5kb zipped.
 
+## TODO - multi-player
+
+- [ ] BIG picture: merge automatically any "others" that have changes
+- [ ] only update/save my doc when "others" has changes (noop when no changes)
+- [ ] loop - how to watch files and merge only when changes?
+- [ ] ask the name on a new device only (when not loaded before - use IDB?)
+- [ ] no way to create a new todo project on disk
+- [ ] update automerge WASM
+- [ ] investigate js bindings
+
+### OLD STUFF
+
 ## TODO
 
 - [x] move automerge to a store
@@ -13,6 +25,7 @@
 - [ ] the new/open/save popup nightmare
 - [x] switch back to typescript: store.js -> store.ts
 - [x] re-create project to have a modern svelte/rollup/... setup
+
 
 ## collab story:
 
