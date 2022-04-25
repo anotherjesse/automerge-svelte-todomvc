@@ -150,6 +150,8 @@ export const automerge_store = () => {
 
             const doc = Automerge.load(data)
 
+            console.log("heads", file.name, doc.getHeads())
+
             set(doc)
         }
     }
@@ -159,32 +161,55 @@ export const automerge_store = () => {
         const contents = await file.arrayBuffer()
         const data = new Uint8Array(contents)
 
-        const remoteDoc = Automerge.load(data)
-
         update(doc => {
-            doc.merge(remoteDoc);
+            const origHeads = doc.getHeads()
+
+            doc.loadIncremental(data)
+
+            const newHeads = doc.getHeads()
+
+            console.log('merged', origHeads, newHeads)
+            // only update if anythign changes
+            if (JSON.stringify(origHeads) !== JSON.stringify(newHeads)) {
+                setTimeout(save, 100); // this is bad
+            }
             return doc
         })
-
-        setTimeout(save, 100); // this is bad
     }
 
-
     const merge_all = async (files: FileSystemFileHandle[]) => {
+
+        // this is a bad pattern - loading everythign and then merging
+        // a sideeffect of the horrible decision I made with how the automerge
+        // svelte store is implemented.
+
+        const datas = [];
         for (let file of files) {
             const handle = await file.getFile()
             const contents = await handle.arrayBuffer()
             const data = new Uint8Array(contents)
 
-            const remoteDoc = Automerge.load(data)
-            console.log(remoteDoc)
-            update(doc => {
-                doc.merge(remoteDoc);
-                return doc
-            })
+            datas.push(data)
         }
 
-        setTimeout(save, 100); // this is bad
+        update(doc => {
+
+            const origHeads = doc.getHeads()
+
+            for (let data of datas) {
+                doc.loadIncremental(data)
+            }
+
+            const newHeads = doc.getHeads()
+            console.log('merged', origHeads, newHeads)
+            // only update if anythign changes
+            if (JSON.stringify(origHeads) !== JSON.stringify(newHeads)) {
+                setTimeout(save, 100); // this is bad
+            }
+
+
+            return doc
+        })
     }
 
     const closeFile = () => {

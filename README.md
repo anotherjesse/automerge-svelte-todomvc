@@ -7,13 +7,14 @@
 ## TODO - multi-player
 
 - [ ] BIG picture: merge automatically any "others" that have changes
-- [ ] only update/save my doc when "others" has changes (noop when no changes)
+- [x] only update/save my doc when "others" has changes (noop when no changes)
 - [ ] loop - how to watch files and merge only when changes?
 - [ ] ask the name on a new device only (when not loaded before - use IDB?)
 - [ ] no way to create a new todo project on disk
 - [ ] bug: clear completed / toggle all doesn't save
 - [x] update automerge WASM
-- [ ] investigate js bindings
+- [ ] investigate js bindings (materialize?)
+- [ ] automerge store "updates" way too often - even when nothing happens (see merge code)
 
 ### OLD STUFF
 
