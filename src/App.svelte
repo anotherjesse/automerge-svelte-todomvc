@@ -2,6 +2,7 @@
   import * as idb from 'idb-keyval'
   import Todo from './Todo.svelte'
   import { createAppStore } from './app-store'
+  import { ensurePermissions } from './automerge-store'
 
   import {
     loadFileDialog,
@@ -12,52 +13,8 @@
   let filenames = []
   let stores = []
 
-  const newMemoryStore = () => {
-    const store = createAppStore()
-    store.fileName = 'in-memory'
-    stores = [...stores, store]
-  }
-
-  const newFileStore = async () => {
-    const file = await saveFileDialog()
-    if (file) {
-      idb.set(file.name, file)
-      updateFilenames()
-      const store = createAppStore()
-      store.fileName = file.name
-      store.newSaveFile(file)
-      stores = [...stores, store]
-    }
-  }
-
-  const loadFileStore = async () => {
-    const file = await loadFileDialog()
-    if (file) {
-      idb.set(file.name, file)
-      updateFilenames()
-      const store = createAppStore()
-      store.fileName = file.name
-      store.loadAndSaveToFile(file)
-      stores = [...stores, store]
-    }
-  }
-
-  const loadStoredFileStore = async (filename) => {
-    const file = await idb.get(filename)
-    if (file) {
-      const store = createAppStore()
-      store.fileName = file.name
-      store.loadAndSaveToFile(file)
-      stores = [...stores, store]
-    }
-  }
-
-  const openFolder = async () => {
-    const handle = await openFolderDialog()
-    if (!handle) return
-
+  const getAutomergeFiles = async (handle) => {
     const files = {}
-
     for await (const entry of handle.values()) {
       // filenames look like "todo-name.mrg"
       // use regex to extract the name
@@ -67,19 +24,55 @@
       }
     }
 
-    console.log(files)
+    return files
+  }
+
+  const loadStoredFileStore = async (filename) => {
+    const name = filename.match(/^todo.(.+)\.mrg$/)[1]
+
+    const handle = await idb.get(filename)
+
+    if (handle && (await ensurePermissions(handle))) {
+      const files = await getAutomergeFiles(handle)
+      console.log(files)
+      const file = files[name]
+
+      const store = createAppStore()
+      store.fileName = file.name
+      store.files = files
+      store.loadAndSaveToFile(file)
+      stores = [...stores, store]
+    }
+  }
+
+  const openFolder = async () => {
+    const handle = await openFolderDialog()
+    if (!handle) return
+
+    const files = await getAutomergeFiles(handle)
+
+    if (Object.keys(files).length === 0) {
+      console.log('No automerge files found in the selected folder')
+      return
+    }
+
     const name = window.prompt('who are you?')
-    console.log({ name })
     const file = files[name]
 
-    if (!file) return
+    if (!file) {
+      console.log('could not find user of name', name)
+      console.log('existing users:', Object.keys(files))
+      return
+    }
 
-    console.log(file)
     const store = createAppStore()
     store.fileName = file.name
     store.files = files
     store.loadAndSaveToFile(file)
     stores = [...stores, store]
+
+    idb.set(file.name, handle)
+    updateFilenames()
   }
 
   const closeStore = (store) => {
@@ -95,9 +88,6 @@
 
 <h1>amt</h1>
 <nav>
-  <!-- <button on:click={newMemoryStore}>New Memory</button>
-  <button on:click={loadFileStore}>Load File</button>
-  <button on:click={newFileStore}>New File</button> -->
   <button on:click={openFolder}>Open Folder</button>
 </nav>
 

@@ -36,32 +36,28 @@ type StoreItem = {
 
 export const loadFileDialog = async (): Promise<FileSystemFileHandle> => {
     const [handle] = await window.showOpenFilePicker(fileOptions)
-    if ((await handle.queryPermission(fileOptions)) === 'granted' ||
-        (await handle.requestPermission(fileOptions)) === 'granted') {
-        return handle;
-    }
+    return (await ensurePermissions(handle)) && handle;
 }
 
 export const saveFileDialog = async (): Promise<FileSystemFileHandle> => {
     const handle = await window.showSaveFilePicker(fileOptions)
-    if ((await handle.queryPermission(fileOptions)) === 'granted' ||
-        (await handle.requestPermission(fileOptions)) === 'granted') {
-        return handle;
-    }
+    return (await ensurePermissions(handle)) && handle;
 }
 
 export const openFolderDialog = async (): Promise<FileSystemDirectoryHandle> => {
     const handle = await window.showDirectoryPicker(fileOptions)
+    return (await ensurePermissions(handle)) && handle;
+}
+
+export const ensurePermissions = async (handle: FileSystemFileHandle | FileSystemDirectoryHandle): Promise<boolean> => {
     if ((await handle.queryPermission(fileOptions)) === 'granted' ||
         (await handle.requestPermission(fileOptions)) === 'granted') {
-        return handle;
+        return true
     }
 }
 
-
 // FIXME(ja): there is no good place to hook the save handler...
 // it should be able to happen after batch updates / any mutations
-
 
 export const automerge_store = () => {
 
@@ -209,6 +205,7 @@ export const automerge_store = () => {
         loadAndSaveToFile,
         newSaveFile,
         closeFile,
-        merge_file
+        merge_file,
+        ensurePermissions
     };
 }
