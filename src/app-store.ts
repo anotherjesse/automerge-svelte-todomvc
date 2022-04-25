@@ -53,7 +53,7 @@ export const createAppStore = (handle, files, file) => {
         newSaveFile: am_store.newSaveFile,
         closeFile: am_store.closeFile,
         merge_file: am_store.merge_file,
-        merge_all: () => am_store.merge_all(others),
+        merge_others: () => am_store.merge_all(others),
         addTodo: (description: string) =>
             am_store.addItem({
                 id: uuid(),

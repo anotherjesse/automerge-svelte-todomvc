@@ -113,7 +113,7 @@
           </button>
         {/if}
       {/each}
-      <button on:click={() => store.merge_all()}> merge all </button>
+      <button on:click={() => store.merge_others()}> merge all others </button>
     {/if}
   </h2>
 
