@@ -125,7 +125,7 @@ export const automerge_store = () => {
             // seems to point to this being a bad pattern.  I think we need
             // a custom store instead of shoving doc into a writable store.
 
-            const reallySave = async (data) => {
+            const reallySave = async (data: Uint8Array) => {
                 await writable.write(data)
                 await writable.close()
             }
@@ -165,6 +165,25 @@ export const automerge_store = () => {
             doc.merge(remoteDoc);
             return doc
         })
+
+        setTimeout(save, 100); // this is bad
+    }
+
+
+    const merge_all = async (files: FileSystemFileHandle[]) => {
+        for (let file of files) {
+            const handle = await file.getFile()
+            const contents = await handle.arrayBuffer()
+            const data = new Uint8Array(contents)
+
+            const remoteDoc = Automerge.loadDoc(data)
+            console.log(remoteDoc)
+            update(doc => {
+                doc.merge(remoteDoc);
+                return doc
+            })
+        }
+
         setTimeout(save, 100); // this is bad
     }
 
@@ -178,17 +197,14 @@ export const automerge_store = () => {
     }
 
     const loadAndSaveToFile = async (handle: FileSystemFileHandle) => {
-        if ((await handle.queryPermission(fileOptions)) === 'granted' ||
-            (await handle.requestPermission(fileOptions)) === 'granted') {
-
+        if (await (ensurePermissions(handle))) {
             setFile(handle);
             load()
         }
     }
 
     const newSaveFile = async (handle: FileSystemFileHandle) => {
-        if ((await handle.queryPermission(fileOptions)) === 'granted' ||
-            (await handle.requestPermission(fileOptions)) === 'granted') {
+        if (await (ensurePermissions(handle))) {
             setFile(handle);
             save();
         }
@@ -204,6 +220,7 @@ export const automerge_store = () => {
         newSaveFile,
         closeFile,
         merge_file,
+        merge_all,
         ensurePermissions
     };
 }

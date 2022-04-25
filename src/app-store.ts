@@ -20,7 +20,7 @@ function uuid(): string {
     )
 }
 
-export const createAppStore = () => {
+export const createAppStore = (handle, files, file) => {
     const am_store = automerge_store();
 
     const app_store = derived(am_store, doc => {
@@ -41,12 +41,19 @@ export const createAppStore = () => {
         return items;
     })
 
+    const others = Object.values(files).filter(f => f !== file);
+    console.log(others)
+    am_store.loadAndSaveToFile(file)
+
     return {
         ...app_store,
-        loadAndSaveToFile: am_store.loadAndSaveToFile,
+        files,
+        file,
+        fileName: file.name,
         newSaveFile: am_store.newSaveFile,
         closeFile: am_store.closeFile,
         merge_file: am_store.merge_file,
+        merge_all: () => am_store.merge_all(others),
         addTodo: (description: string) =>
             am_store.addItem({
                 id: uuid(),

@@ -37,10 +37,7 @@
       console.log(files)
       const file = files[name]
 
-      const store = createAppStore()
-      store.fileName = file.name
-      store.files = files
-      store.loadAndSaveToFile(file)
+      const store = createAppStore(handle, files, file)
       stores = [...stores, store]
     }
   }
@@ -65,10 +62,7 @@
       return
     }
 
-    const store = createAppStore()
-    store.fileName = file.name
-    store.files = files
-    store.loadAndSaveToFile(file)
+    const store = createAppStore(handle, files, file)
     stores = [...stores, store]
 
     idb.set(file.name, handle)
@@ -119,6 +113,7 @@
           </button>
         {/if}
       {/each}
+      <button on:click={() => store.merge_all()}> merge all </button>
     {/if}
   </h2>
 
