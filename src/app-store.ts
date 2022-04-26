@@ -71,7 +71,7 @@ export const createAppStore = (handle, files, file) => {
         }
     }
 
-    let watcher
+    let watcher_id = setInterval(check_others, 1000)
 
     return {
         ...app_store,
@@ -82,12 +82,13 @@ export const createAppStore = (handle, files, file) => {
         closeFile: am_store.closeFile,
         merge_file: am_store.merge_file,
         merge_others: () => am_store.merge_all(others),
+        stop_watcher: () => clearInterval(watcher_id),
         watcher: () => {
-            if (watcher) {
-                clearInterval(watcher)
-                watcher = null;
+            if (watcher_id) {
+                clearInterval(watcher_id)
+                watcher_id = null;
             } else {
-                watcher = setInterval(check_others, 1000)
+                watcher_id = setInterval(check_others, 1000)
             }
         },
         addTodo: (description: string) =>

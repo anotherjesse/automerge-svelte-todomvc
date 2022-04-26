@@ -69,6 +69,8 @@
   }
 
   const closeStore = (store) => {
+    // stopping watcher should happen by the store itself
+    store.stop_watcher()
     stores = stores.filter((s) => s !== store)
   }
 
@@ -103,18 +105,6 @@
   <h2>
     {store.fileName}
     <button on:click={() => closeStore(store)}>Close File</button>
-
-    {#if store.files}
-      {#each Object.entries(store.files) as [name, file]}
-        {#if store.fileName !== file.name}
-          <button on:click={() => store.merge_file(file)}>
-            merge {name}
-          </button>
-        {/if}
-      {/each}
-      <button on:click={() => store.merge_others()}> merge all others </button>
-      <button on:click={() => store.watcher()}> watch </button>
-    {/if}
   </h2>
 
   <Todo {store} />
