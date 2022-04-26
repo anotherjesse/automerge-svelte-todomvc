@@ -118,7 +118,6 @@ export const automerge_store = () => {
     const save = async () => {
         if (fileHandle) {
             // fixme(ja): add a limiter to prevent multiple saves
-            console.log('saving to file', fileHandle.name)
             const writable = await fileHandle.createWritable()
 
             // FIXME(ja): using update to get a reference to the (mutable) doc,
@@ -126,6 +125,7 @@ export const automerge_store = () => {
             // a custom store instead of shoving doc into a writable store.
 
             const reallySave = async (data: Uint8Array) => {
+                console.log('saving', fileHandle.name, data.length)
                 await writable.write(data)
                 await writable.close()
             }
@@ -150,8 +150,6 @@ export const automerge_store = () => {
 
             const doc = Automerge.load(data)
 
-            console.log("heads", file.name, doc.getHeads())
-
             set(doc)
         }
     }
@@ -160,6 +158,7 @@ export const automerge_store = () => {
         const file = await handle.getFile()
         const contents = await file.arrayBuffer()
         const data = new Uint8Array(contents)
+        doc.loadIncremental(data)
 
         update(doc => {
             const origHeads = doc.getHeads()
@@ -168,13 +167,17 @@ export const automerge_store = () => {
 
             const newHeads = doc.getHeads()
 
-            console.log('merged', origHeads, newHeads)
             // only update if anythign changes
             if (JSON.stringify(origHeads) !== JSON.stringify(newHeads)) {
+                console.log('merged', origHeads, newHeads)
                 setTimeout(save, 100); // this is bad
+            } else {
+                console.log('merged - no change')
             }
             return doc
         })
+
+        return { bytes: data.length, lastModified: file.lastModified }
     }
 
     const merge_all = async (files: FileSystemFileHandle[]) => {

@@ -34,7 +34,6 @@
 
     if (handle && (await ensurePermissions(handle))) {
       const files = await getAutomergeFiles(handle)
-      console.log(files)
       const file = files[name]
 
       const store = createAppStore(handle, files, file)

@@ -43,21 +43,30 @@ export const createAppStore = (handle, files, file) => {
     })
 
     const others = Object.values(files).filter(f => f !== file);
-    console.log(others)
     am_store.loadAndSaveToFile(file)
 
     // fixme(ja): this interval runs forever - even when the store is closed
     // plus it should be a singleton
-    const merge_sizes = {}
+    const merge_timestamp = {}
     const check_others = async () => {
-
         // let's assume the sizes only increase...
 
         for (var file of others) {
-            const size = (await file.getFile()).size;
-            if (!(file.name in merge_sizes) || size > merge_sizes[file.name]) {
-                await am_store.merge_file(file)
-                merge_sizes[file.name] = size;
+            // FIXME(ja): IMPORTANT - there is a timing issue here.
+            // we should ensure that the file size we read is the size that we expect
+            // because chrome writes in a destructive way, we can end up seeing partial files or 
+            // files after the merge has completed.
+            const f = (await file.getFile())
+
+            const size = f.size;
+
+            if (size > 0) {
+                const last_modified = f.lastModified;
+
+                if (!(file.name in merge_timestamp) || last_modified !== merge_timestamp[file.name]) {
+                    const info = await am_store.merge_file(file)
+                    merge_timestamp[file.name] = info.lastModified;
+                }
             }
         }
     }
