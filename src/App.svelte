@@ -1,7 +1,10 @@
 <script>
   import * as idb from 'idb-keyval'
   import Todo from './Todo.svelte'
-  import { createAppStore } from './app-store'
+  import {
+    loadAppStoreExistingDevice,
+    loadAppStoreNewDevice,
+  } from './app-store'
   import { ensurePermissions } from './automerge-store'
 
   import {
@@ -36,7 +39,7 @@
       const files = await getAutomergeFiles(handle)
       const file = files[name]
 
-      const store = createAppStore(handle, files, file)
+      const store = await loadAppStoreExistingDevice(handle, files, file)
       stores = [...stores, store]
     }
   }
@@ -53,18 +56,18 @@
     }
 
     const name = window.prompt('who are you?')
-    const file = files[name]
+    const safe_name = name.replace(/[^a-zA-Z0-9]/g, '').toLocaleLowerCase()
+    const file = files[safe_name]
 
-    if (!file) {
-      console.log('could not find user of name', name)
-      console.log('existing users:', Object.keys(files))
+    if (files[safe_name]) {
+      console.log('there is already an existing device named:', safe_name)
       return
     }
 
-    const store = createAppStore(handle, files, file)
+    const store = await loadAppStoreNewDevice(handle, files, safe_name)
     stores = [...stores, store]
 
-    idb.set(file.name, handle)
+    idb.set(store.file.name, handle)
     updateFilenames()
   }
 

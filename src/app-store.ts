@@ -20,7 +20,8 @@ function uuid(): string {
     )
 }
 
-export const createAppStore = (handle, files, file) => {
+
+const createAppStore = async (handle, files, file) => {
     const am_store = automerge_store();
 
     const app_store = derived(am_store, doc => {
@@ -137,4 +138,17 @@ export const createAppStore = (handle, files, file) => {
             return doc;
         })
     };
+}
+
+
+export const loadAppStoreNewDevice = async (handle, files, name) => {
+    const filename = `todo.${name}.mrg`;
+    const file = await handle.getFileHandle(filename, { create: true })
+    const store = await createAppStore(handle, files, file);
+    await store.merge_others();
+    return store
+}
+
+export const loadAppStoreExistingDevice = async (handle, files, file) => {
+    return await createAppStore(handle, files, file)
 }
