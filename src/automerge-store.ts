@@ -154,8 +154,7 @@ export const automerge_store = () => {
         }
     }
 
-    const merge_file = async (handle: FileSystemFileHandle) => {
-        const file = await handle.getFile()
+    const merge_file = async (file: File): Promise<number> => {
         const contents = await file.arrayBuffer()
         const data = new Uint8Array(contents)
         doc.loadIncremental(data)
@@ -177,7 +176,7 @@ export const automerge_store = () => {
             return doc
         })
 
-        return { bytes: data.length, lastModified: file.lastModified }
+        return data.length
     }
 
     const merge_all = async (files: FileSystemFileHandle[]) => {

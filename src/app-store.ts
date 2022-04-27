@@ -21,7 +21,7 @@ function uuid(): string {
 }
 
 
-const createAppStore = async (handle, files, file) => {
+const createAppStore = async (handle: FileSystemDirectoryHandle, files: FileSystemFileHandle[], file: FileSystemFileHandle) => {
     const am_store = automerge_store();
 
     const app_store = derived(am_store, doc => {
@@ -52,21 +52,22 @@ const createAppStore = async (handle, files, file) => {
     const check_others = async () => {
         // let's assume the sizes only increase...
 
-        for (var file of others) {
-            // FIXME(ja): IMPORTANT - there is a timing issue here.
-            // we should ensure that the file size we read is the size that we expect
-            // because chrome writes in a destructive way, we can end up seeing partial files or 
-            // files after the merge has completed.
-            const f = (await file.getFile())
+        for await (const entry of handle.values()) {
+            if (entry.kind !== 'file') continue
+            if (entry.name === file.name) continue
 
-            const size = f.size;
+            if (entry.name.match(/^(.+)\.mrg$/) === null) continue
+
+            const other = (await entry.getFile())
+
+            const size = other.size;
 
             if (size > 0) {
-                const last_modified = f.lastModified;
+                const last_modified = other.lastModified;
 
-                if (!(file.name in merge_timestamp) || last_modified !== merge_timestamp[file.name]) {
-                    const info = await am_store.merge_file(file)
-                    merge_timestamp[file.name] = info.lastModified;
+                if (!(other.name in merge_timestamp) || last_modified !== merge_timestamp[other.name]) {
+                    const bytes = await am_store.merge_file(other)
+                    merge_timestamp[other.name] = other.lastModified;
                 }
             }
         }
@@ -81,7 +82,6 @@ const createAppStore = async (handle, files, file) => {
         fileName: file.name,
         newSaveFile: am_store.newSaveFile,
         closeFile: am_store.closeFile,
-        merge_file: am_store.merge_file,
         merge_others: () => am_store.merge_all(others),
         stop_watcher: () => clearInterval(watcher_id),
         watcher: () => {
@@ -141,7 +141,7 @@ const createAppStore = async (handle, files, file) => {
 }
 
 
-export const loadAppStoreNewDevice = async (handle, files, name) => {
+export const loadAppStoreNewDevice = async (handle: FileSystemDirectoryHandle, files: FileSystemFileHandle[], name: string) => {
     const filename = `todo.${name}.mrg`;
     const file = await handle.getFileHandle(filename, { create: true })
     const store = await createAppStore(handle, files, file);
@@ -149,6 +149,6 @@ export const loadAppStoreNewDevice = async (handle, files, name) => {
     return store
 }
 
-export const loadAppStoreExistingDevice = async (handle, files, file) => {
+export const loadAppStoreExistingDevice = async (handle: FileSystemDirectoryHandle, files: FileSystemFileHandle[], file: FileSystemFileHandle) => {
     return await createAppStore(handle, files, file)
 }
